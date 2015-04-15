@@ -17,6 +17,7 @@ group :assets do
   gem 'uglifier'
   gem 'lightbox2-rails'
   gem 'jquery-rails'
+  gem 'underscore-rails'
   gem 'font-awesome-rails'
   gem 'sprockets-coffee-react'
 end

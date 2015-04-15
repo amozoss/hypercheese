@@ -166,6 +166,7 @@ GEM
     uglifier (2.5.3)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
+    underscore-rails (1.8.2)
     warden (1.2.3)
       rack (>= 1.0)
     zipline (0.0.9)
@@ -200,4 +201,5 @@ DEPENDENCIES
   thin
   twitter-bootstrap-rails
   uglifier
+  underscore-rails
   zipline

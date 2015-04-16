@@ -2,14 +2,15 @@
 
 @GalleryApp = React.createClass
   getInitialState: ->
-    items: {}
+    items: SearchStore.getItems()
     tags: {}
     searchQuery: ""
-    resultCount: 0
+    resultCount: SearchStore.getResultCount()
     scrollTop: $(window).scrollTop()
 
   componentDidMount: ->
     window.addEventListener 'scroll', @onScroll, false
+    # TODO make tag store
     $.ajax
       url: "/tags"
       dataType: "json"
@@ -17,60 +18,24 @@
         @setState
           tags: res.tags
 
-    @executeSearch(0) 
+    SearchStore.addChangeListener(@onChange)
+    SearchActionCreators.executeSearch(0)
 
   componentWillUnmount: ->
-    window.removeEventListener 'scroll', @onScroll, false
+    window.removeChangeListener 'scroll', @onScroll, false
+    SearchStore.removeEventListener(@onChange)
+
+  getStateFromStores: ->
+    items: SearchStore.getItems()
+    resultCount: SearchStore.getResultCount()
+
+  onChange: ->
+    @setState @getStateFromStores()
 
   onScroll: ->
     # FIXME We need to throttle these events
     @setState
       scrollTop: $(window).scrollTop()
-
-  executeSearch: (position) ->
-    limit = 20
-    if @searching?
-      # ignore duplicate requests
-      return unless @searching + limit < position || position + limit < @searching
-      @searchRequest.abort()
-
-    @searching = position
-
-    @searchRequest = $.ajax
-      url: "/items"
-      dataType: "json"
-      data:
-        limit: limit
-        offset: position
-        query: @state.searchQuery
-      success: (res) =>
-        @searching = null
-        @setState
-          resultCount: res.meta.total
-          items: @injectItems( res.items, position )
-      complete: =>
-        @searching = null
-
-  injectItems: (items, pos) ->
-    newItems = @shallowCopyItems()
-
-    i = 0
-    while i < items.length
-      items[i].position = pos + i
-      newItems[pos + i] = items[i]
-      i++
-
-    newItems
-
-  shallowCopyItems: ->
-    $.extend {}, @state.items
-
-  updateItem: (item) ->
-    newItems = @shallowCopyItems()
-    newItems[item.position] = item
-
-    @setState
-      items: newItems
 
   viewPortItems: (startIndex, endIndex) ->
     items = []
@@ -78,7 +43,8 @@
     for i in [startIndex...endIndex]
       continue if i < 0 || i >= @state.resultCount
       item = @state.items[i]
-      @executeSearch(i) unless item
+      # FIXME Cannot dispatch in the middle of a dispatch.
+      SearchActionCreators.executeSearch(i) unless item
       items.push item
 
     items

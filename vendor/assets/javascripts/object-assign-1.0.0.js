@@ -8,7 +8,7 @@ function ToObject(val) {
   return Object(val);
 }
 
-module.exports = Object.assign || function (target, source) {
+var objectAssign = Object.assign || function (target, source) {
   var pendingException;
   var from;
   var keys;

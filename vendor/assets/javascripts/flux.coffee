@@ -1,1 +1,1 @@
-#= require flux/flux-2.0.0
+#= require flux-2.0.0
